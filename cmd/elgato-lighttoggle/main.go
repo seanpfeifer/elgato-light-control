@@ -7,16 +7,21 @@ import (
 	"github.com/seanpfeifer/rigging/logging"
 )
 
-const (
-	defaultAddress = "192.168.1.201"
-)
-
 func main() {
-	lights, err := elgato.GetLightInfo(defaultAddress, elgato.DefaultPort)
+	devices, err := elgato.FindDevices(elgato.NameRingLight)
+	logging.FatalIfError(err, "finding lights")
+	if len(devices) < 1 {
+		return
+	}
+
+	address := devices[0].IP.String()
+	port := devices[0].Port
+
+	lights, err := elgato.GetLightInfo(address, port)
 	logging.FatalIfError(err, "getting light info")
 	log.Printf("%+v", lights)
 
 	lights.Toggle()
-	err = elgato.UpdateLightOptions(defaultAddress, elgato.DefaultPort, lights)
-	logging.FatalIfError(err, "toggling light")
+	err = elgato.UpdateLightOptions(address, port, lights)
+	logging.FatalIfError(err, "toggling lights")
 }
