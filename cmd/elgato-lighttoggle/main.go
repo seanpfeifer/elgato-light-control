@@ -18,8 +18,6 @@ func main() {
 		return
 	}
 
-	// https://github.com/hashicorp/mdns/issues/80
-
 	address := devices[0].IP.String()
 	port := devices[0].Port
 
