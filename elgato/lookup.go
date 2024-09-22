@@ -19,7 +19,7 @@ type Device struct {
 	Port uint16
 }
 
-func FindDevices(searchStr string) ([]Device, error) {
+func FindDevices(searchStr string, iface net.Interface) ([]Device, error) {
 	var devices []Device
 	entriesCh := make(chan *mdns.ServiceEntry, 4)
 
@@ -40,7 +40,13 @@ func FindDevices(searchStr string) ([]Device, error) {
 		}
 	}()
 
-	err := mdns.Lookup(MDNSService, entriesCh)
+	params := mdns.DefaultParams(MDNSService)
+	params.Entries = entriesCh
+	params.DisableIPv6 = true
+	// This needs to be done on Windows 11, otherwise the query will fail to find any devices
+	// https://github.com/hashicorp/mdns/issues/80
+	params.Interface = &iface
+	err := mdns.Query(params)
 	close(entriesCh)
 
 	// Wait until the goroutine finishes writing to `devices`.
